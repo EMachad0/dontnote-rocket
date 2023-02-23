@@ -9,19 +9,19 @@ pub fn graphiql() -> content::RawHtml<String> {
 }
 
 #[rocket::get("/graphql?<request>")]
-pub fn get_graphql_handler(
+pub async fn get_graphql_handler(
     context: &State<Context>,
     request: juniper_rocket::GraphQLRequest,
     schema: &State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&*schema, &*context)
+    request.execute(&*schema, &*context).await
 }
 
 #[rocket::post("/graphql", data = "<request>")]
-pub fn post_graphql_handler(
+pub async fn post_graphql_handler(
     context: &State<Context>,
     request: juniper_rocket::GraphQLRequest,
     schema: &State<Schema>,
 ) -> juniper_rocket::GraphQLResponse {
-    request.execute_sync(&*schema, &*context)
+    request.execute(&*schema, &*context).await
 }

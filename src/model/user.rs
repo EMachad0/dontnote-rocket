@@ -1,37 +1,54 @@
-use uuid::Uuid;
+use juniper::FieldResult;
+use serde::{Deserialize, Serialize};
 
 use crate::graphql::{Context, Mutation, Query};
+use crate::model::Model;
 
-#[derive(Clone, GraphQLObject)]
+#[derive(Clone, Serialize, Deserialize, GraphQLObject)]
 pub struct User {
-    pub id: Option<Uuid>,
+    #[serde(skip_serializing)]
+    pub id: Option<String>,
     pub name: String,
     pub email: String,
     pub password: String,
 }
 
+impl Model for User {
+    const TABLE: &'static str = "user";
+}
+
+#[derive(GraphQLInputObject)]
+pub struct UserInput {
+    pub name: String,
+    pub email: String,
+    pub password: String,
+}
+
+impl From<UserInput> for User {
+    fn from(input: UserInput) -> Self {
+        Self {
+            id: None,
+            name: input.name,
+            email: input.email,
+            password: input.password,
+        }
+    }
+}
+
 #[graphql_object(context = Context)]
 impl Query {
-    fn users(context: &Context) -> Vec<User> {
-        let db = context.db.read().unwrap();
-        db.users.values().cloned().collect()
+    async fn users(context: &Context) -> FieldResult<Vec<User>> {
+        let db = context.db.read().await;
+        let users: Vec<User> = db.select(User::TABLE).await?;
+        Ok(users)
     }
 }
 
 #[graphql_object(context = Context)]
 impl Mutation {
-    fn create_user(context: &Context, name: String) -> juniper::FieldResult<User> {
-        let user = User {
-            id: Some(Uuid::new_v4()),
-            name,
-            email: "".to_string(),
-            password: "".to_string(),
-        };
-
-        {
-            let mut db = context.db.write().unwrap();
-            db.users.insert(user.id.unwrap(), user.clone());
-        }
+    async fn create_user(context: &Context, input: UserInput) -> FieldResult<User> {
+        let db = context.db.read().await;
+        let user = db.create(User::TABLE).content(User::from(input)).await?;
         Ok(user)
     }
 }

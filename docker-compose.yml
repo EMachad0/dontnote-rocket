@@ -1,13 +1,8 @@
 services:
   db:
-    image: surrealdb/surrealdb:latest
+    image: surrealdb/surrealdb:nightly
     container_name: surrealdb
     restart: always
     ports:
       - 8432:8000
-    command:
-      - start
-      - --log=debug
-      - --user=root
-      - --pass=root
-      - memory
+    command: start --log trace --user root --pass root memory
