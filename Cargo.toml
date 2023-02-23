@@ -6,3 +6,11 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
+anyhow = "1.0.69"
+juniper = { version = "0.15.11", features = ["uuid", "anyhow", "expose-test-schema"] }
+juniper_rocket = "0.8.2"
+rocket = "0.5.0-rc.2"
+serde = { version = "1.0.152", features = ["serde_derive"] }
+surrealdb = "1.0.0-beta.8"
+tokio = { version = "1.25.0", features = ["full", "tracing"] }
+uuid = { version = "0.8.2", features = ["v4"] }
