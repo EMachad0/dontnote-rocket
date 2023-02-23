@@ -7,11 +7,10 @@ edition = "2021"
 
 [dependencies]
 anyhow = "1.0.69"
+async-graphql = { version = "5.0.6", features = ["tokio"] }
+async-graphql-rocket = "5.0.6"
 async-trait = "0.1.64"
-juniper = { version = "0.15.11", features = ["uuid", "anyhow", "expose-test-schema"] }
-juniper_rocket = "0.8.2"
 rocket = "0.5.0-rc.2"
 serde = { version = "1.0.152", features = ["serde_derive"] }
 surrealdb = { git = "https://github.com/surrealdb/surrealdb", branch = "main" }
 tokio = { version = "1.25.0", features = ["full", "tracing"] }
-uuid = { version = "0.8.2", features = ["v4", "serde"] }

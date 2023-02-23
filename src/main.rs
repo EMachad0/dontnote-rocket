@@ -6,31 +6,32 @@ mod model;
 extern crate rocket;
 
 #[macro_use]
-extern crate juniper;
+extern crate async_graphql;
 
-fn build_rocket(context: graphql::Context) -> rocket::Rocket<rocket::Build> {
-    rocket::build()
-        .manage(context)
-        .manage(graphql::Schema::new(
-            graphql::Query,
-            graphql::Mutation,
-            juniper::EmptySubscription::<graphql::Context>::new(),
-        ))
-        .mount(
-            "/",
-            routes![
-                graphql::graphiql,
-                graphql::get_graphql_handler,
-                graphql::post_graphql_handler
-            ],
-        )
+fn build_rocket(db: database::Database) -> rocket::Rocket<rocket::Build> {
+    let schema = async_graphql::Schema::build(
+        graphql::QueryRoot,
+        graphql::Mutation,
+        async_graphql::EmptySubscription,
+    )
+    .data(db)
+    .finish();
+
+    rocket::build().manage(schema).mount(
+        "/",
+        routes![
+            graphql::graphiql,
+            graphql::graphql_query,
+            graphql::graphql_request,
+        ],
+    )
 }
 
 #[rocket::main]
 async fn main() -> anyhow::Result<()> {
     println!("trying db");
-    let context = graphql::Context::new().await?;
+    let db = database::Database::new().await?;
     println!("conected to db");
-    let _rocket = build_rocket(context).launch().await?;
+    let _rocket = build_rocket(db).launch().await?;
     Ok(())
 }

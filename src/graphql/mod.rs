@@ -1,16 +1,12 @@
-mod context;
+mod mutation;
+mod resolver;
 mod routes;
 
-use juniper::RootNode;
-use juniper::EmptySubscription;
+use mutation::MutationRoot;
+use resolver::ResolverRoot;
 
-pub use context::Context;
+use async_graphql::EmptySubscription;
+
 pub use routes::*;
 
-pub struct Query;
-
-pub struct Mutation;
-
-pub type Schema =
-    RootNode<'static, Query, Mutation, EmptySubscription<Context>>;
-
+pub type Schema = async_graphql::Schema<ResolverRoot, MutationRoot, EmptySubscription>;

@@ -1,27 +1,25 @@
-use rocket::response::content;
+use async_graphql::http::GraphiQLSource;
+use async_graphql_rocket::{GraphQLRequest, GraphQLResponse, GraphQLQuery};
+use rocket::response::content::RawHtml;
 use rocket::State;
 
-use super::{Context, Schema};
+use super::Schema;
 
 #[rocket::get("/")]
-pub fn graphiql() -> content::RawHtml<String> {
-    juniper_rocket::graphiql_source("/graphql", None)
+pub fn graphiql() -> RawHtml<String> {
+    let graphiql = GraphiQLSource::build().endpoint("/graphql").finish();
+    RawHtml(graphiql)
 }
 
-#[rocket::get("/graphql?<request>")]
-pub async fn get_graphql_handler(
-    context: &State<Context>,
-    request: juniper_rocket::GraphQLRequest,
-    schema: &State<Schema>,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute(&*schema, &*context).await
+#[rocket::get("/graphql?<query..>")]
+pub async fn graphql_query(schema: &State<Schema>, query: GraphQLQuery) -> GraphQLResponse {
+    query.execute(schema.inner()).await
 }
 
-#[rocket::post("/graphql", data = "<request>")]
-pub async fn post_graphql_handler(
-    context: &State<Context>,
-    request: juniper_rocket::GraphQLRequest,
+#[rocket::post("/graphql", data = "<request>", format = "application/json")]
+pub async fn graphql_request(
     schema: &State<Schema>,
-) -> juniper_rocket::GraphQLResponse {
-    request.execute(&*schema, &*context).await
+    request: GraphQLRequest,
+) -> GraphQLResponse {
+    request.execute(schema.inner()).await
 }
