@@ -8,9 +8,11 @@ pub struct UserQuery;
 #[Object]
 impl UserQuery {
     async fn user(&self, ctx: &async_graphql::Context<'_>) -> async_graphql::Result<Vec<User>> {
+        let current_user = ctx.data::<User>()?;
         let db = ctx.data::<Database>()?;
-        let db = db.read().await;
-        let users: Vec<User> = db.select(User::TABLE).await?;
+        let users: Vec<User> = db
+            .select((User::TABLE, current_user.id.as_ref().unwrap()))
+            .await?;
         Ok(users)
     }
 }

@@ -2,7 +2,7 @@ use serde::{Deserialize, Serialize};
 
 use crate::model::Model;
 
-#[derive(Clone, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
 pub struct User {
     #[serde(skip_serializing)]
     pub id: Option<String>,

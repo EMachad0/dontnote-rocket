@@ -1,4 +1,8 @@
-mod create_user;
+mod user_login;
+mod user_register;
 
 #[derive(MergedObject, Default)]
-pub struct MutationRoot(create_user::CreateUserMutation);
+pub struct MutationRoot(
+    user_register::UserRegisterMutation,
+    user_login::UserLoginMutation,
+);

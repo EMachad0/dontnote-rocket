@@ -21,17 +21,16 @@ impl From<UserInput> for User {
 }
 
 #[derive(Default)]
-pub struct CreateUserMutation;
+pub struct UserRegisterMutation;
 
 #[Object]
-impl CreateUserMutation {
-    async fn create_user(
+impl UserRegisterMutation {
+    async fn user_register(
         &self,
         ctx: &async_graphql::Context<'_>,
         input: UserInput,
     ) -> async_graphql::Result<User> {
         let db = ctx.data::<Database>()?;
-        let db = db.read().await;
         let user = db.create(User::TABLE).content(User::from(input)).await?;
         Ok(user)
     }

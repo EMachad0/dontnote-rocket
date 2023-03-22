@@ -1,9 +1,12 @@
 use async_graphql::http::GraphiQLSource;
-use async_graphql_rocket::{GraphQLRequest, GraphQLResponse, GraphQLQuery};
+use async_graphql_rocket::{GraphQLQuery, GraphQLRequest, GraphQLResponse};
 use rocket::response::content::RawHtml;
 use rocket::State;
 
-use super::Schema;
+use crate::auth::AuthSubject;
+use crate::database::Database;
+use crate::graphql::Schema;
+use crate::model::user::User;
 
 #[rocket::get("/")]
 pub fn graphiql() -> RawHtml<String> {
@@ -19,7 +22,23 @@ pub async fn graphql_query(schema: &State<Schema>, query: GraphQLQuery) -> Graph
 #[rocket::post("/graphql", data = "<request>", format = "application/json")]
 pub async fn graphql_request(
     schema: &State<Schema>,
+    db: &State<Database>,
+    subject: AuthSubject,
     request: GraphQLRequest,
 ) -> GraphQLResponse {
-    request.execute(schema.inner()).await
+    let user = match Some(subject) {
+        None => None,
+        Some(subject) => {
+            let id = subject.as_str().split_once(':').unwrap();
+            println!("{:?}", id);
+            let user: Vec<User> = db.select(("user", "oqzqfhvcoslpaqa7qbu2")).await.unwrap();
+            println!("{:?}", user);
+            Some(user[0].clone())
+        }
+    };
+    if let Some(user) = user {
+        request.data(user).execute(schema.inner()).await
+    } else {
+        request.execute(schema.inner()).await
+    }
 }
