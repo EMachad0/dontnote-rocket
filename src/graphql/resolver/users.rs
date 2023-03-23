@@ -1,17 +1,15 @@
 use diesel::prelude::*;
 
 use crate::database::Database;
-use crate::graphql::guards::logged_user::LoggedUserGuard;
 use crate::model::user::User;
 
 #[derive(Default)]
-pub struct UserQuery;
+pub struct UsersQuery;
 
 #[Object]
-impl UserQuery {
-    #[graphql(guard = "LoggedUserGuard")]
+impl UsersQuery {
     async fn user(&self, ctx: &async_graphql::Context<'_>) -> async_graphql::Result<Vec<User>> {
-        let current_user = ctx.data::<User>().unwrap();
+        let current_user = User::from_context(ctx)?;
 
         let db = ctx.data::<Database>()?;
         let users: Vec<User> = {

@@ -1,4 +1,4 @@
-mod user;
+mod users;
 
 #[derive(MergedObject, Default)]
-pub struct ResolverRoot(user::UserQuery);
+pub struct ResolverRoot(users::UsersQuery);

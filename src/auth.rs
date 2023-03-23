@@ -74,6 +74,14 @@ pub enum AuthError {
     InvalidToken(#[from] biscuit::errors::Error),
     #[error("missing auth subject")]
     MissingSubject,
+    #[error("not logged in")]
+    Unauthenticated,
+}
+
+impl AuthError {
+    pub fn anyhow(self) -> anyhow::Error {
+        anyhow::Error::new(self)
+    }
 }
 
 #[rocket::async_trait]
