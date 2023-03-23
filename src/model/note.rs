@@ -1,14 +1,11 @@
-use serde::{Deserialize, Serialize};
+use diesel::Queryable;
+use uuid::Uuid;
 
-use crate::model::Model;
-
-#[derive(Clone, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, SimpleObject, Queryable)]
 pub struct Note {
-    #[serde(skip_serializing)]
-    pub id: Option<String>,
+    #[graphql(skip)]
+    pub id: i32,
+    #[graphql(name = "id")]
+    pub uuid: Uuid,
     pub text: String,
-}
-
-impl Model for Note {
-    const TABLE: &'static str = "note";
 }
