@@ -2,6 +2,7 @@ mod auth;
 mod database;
 mod graphql;
 mod model;
+mod schema;
 
 #[macro_use]
 extern crate rocket;
@@ -41,7 +42,11 @@ fn build_rocket(db: database::Database) -> rocket::Rocket<rocket::Build> {
 #[rocket::main]
 async fn main() -> anyhow::Result<()> {
     dotenv::dotenv()?;
-    let db = database::init_db().await?;
+
+    let db_url = std::env::var("DATABASE_URL")?;
+    let db = database::Database::new(&db_url)?;
+
     let _rocket = build_rocket(db).launch().await?;
+
     Ok(())
 }

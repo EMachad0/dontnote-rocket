@@ -31,13 +31,12 @@ impl Auth {
         let secret = Secret::bytes_from_str(&self.secret);
         let jwt = JWT::new_decoded(RegisteredHeader::default().into(), claims.into());
         let token = jwt.into_encoded(&secret).unwrap();
-        let token = token.unwrap_encoded().to_string();
-        token
+        token.unwrap_encoded().to_string()
     }
 
     pub fn decode_token(&self, token: &str) -> Result<Claims, biscuit::errors::Error> {
         let secret = Secret::bytes_from_str(&self.secret);
-        let token = JWT::<_, biscuit::Empty>::new_encoded(&token);
+        let token = JWT::<_, biscuit::Empty>::new_encoded(token);
         let token = token.into_decoded(&secret, SignatureAlgorithm::HS256)?;
         token.payload().cloned()
     }
@@ -48,7 +47,7 @@ impl From<&User> for Claims {
         Self {
             registered: RegisteredClaims {
                 issuer: Some(ISSUER.to_string()),
-                subject: user.id.clone(),
+                subject: Some(user.uuid.to_string()),
                 ..Default::default()
             },
             private: (),

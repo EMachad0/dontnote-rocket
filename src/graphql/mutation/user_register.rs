@@ -1,23 +1,14 @@
+use diesel::prelude::*;
+
 use crate::database::Database;
 use crate::model::user::User;
-use crate::model::Model;
 
-#[derive(InputObject)]
+#[derive(InputObject, Insertable)]
+#[diesel(table_name = crate::schema::users)]
 pub struct UserInput {
     pub name: String,
     pub email: String,
     pub password: String,
-}
-
-impl From<UserInput> for User {
-    fn from(input: UserInput) -> Self {
-        Self {
-            id: None,
-            name: input.name,
-            email: input.email,
-            password: input.password,
-        }
-    }
 }
 
 #[derive(Default)]
@@ -31,7 +22,13 @@ impl UserRegisterMutation {
         input: UserInput,
     ) -> async_graphql::Result<User> {
         let db = ctx.data::<Database>()?;
-        let user = db.create(User::TABLE).content(User::from(input)).await?;
+        let user: User = {
+            use crate::schema::users::dsl::users;
+            let mut conn = db.get()?;
+            diesel::insert_into(users)
+                .values(&input)
+                .get_result(&mut conn)?
+        };
         Ok(user)
     }
 }

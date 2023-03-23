@@ -1,7 +1,9 @@
 use async_graphql::http::GraphiQLSource;
 use async_graphql_rocket::{GraphQLQuery, GraphQLRequest, GraphQLResponse};
+use diesel::prelude::*;
 use rocket::response::content::RawHtml;
 use rocket::State;
+use uuid::Uuid;
 
 use crate::auth::AuthSubject;
 use crate::database::Database;
@@ -23,22 +25,26 @@ pub async fn graphql_query(schema: &State<Schema>, query: GraphQLQuery) -> Graph
 pub async fn graphql_request(
     schema: &State<Schema>,
     db: &State<Database>,
-    subject: AuthSubject,
-    request: GraphQLRequest,
+    subject: Option<AuthSubject>,
+    mut request: GraphQLRequest,
 ) -> GraphQLResponse {
-    let user = match Some(subject) {
-        None => None,
-        Some(subject) => {
-            let id = subject.as_str().split_once(':').unwrap();
-            println!("{:?}", id);
-            let user: Vec<User> = db.select(("user", "oqzqfhvcoslpaqa7qbu2")).await.unwrap();
-            println!("{:?}", user);
-            Some(user[0].clone())
-        }
+    if let Some(subject) = subject {
+        if let Ok(uuid) = Uuid::parse_str(subject.as_str()) {
+            println!("{:?}", uuid);
+
+            let user: Result<Option<User>, _> = {
+                use crate::schema::users::{dsl::users, uuid as uuid_field};
+                let mut conn = db.get().unwrap();
+                users
+                    .filter(uuid_field.eq(uuid))
+                    .first(&mut conn)
+                    .optional()
+            };
+
+            if let Ok(Some(user)) = user {
+                request = request.data(user);
+            };
+        };
     };
-    if let Some(user) = user {
-        request.data(user).execute(schema.inner()).await
-    } else {
-        request.execute(schema.inner()).await
-    }
+    request.execute(schema.inner()).await
 }

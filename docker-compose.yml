@@ -1,8 +1,11 @@
+version: '3.7'
 services:
   db:
-    image: surrealdb/surrealdb:nightly
-    container_name: surrealdb
-    restart: always
+    image: postgres:15
+    hostname: postgres
     ports:
-      - 8432:8000
-    command: start --log trace --user root --pass root memory
+      - '5432:5432'
+    environment:
+      POSTGRES_DB: ${DB_NAME}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASS}

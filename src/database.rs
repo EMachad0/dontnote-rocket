@@ -1,20 +1,22 @@
-use surrealdb::engine::remote::ws::Client;
-use surrealdb::engine::remote::ws::Ws;
-use surrealdb::opt::auth::Root;
-use surrealdb::Surreal;
+use diesel::r2d2::{ConnectionManager, Pool, PooledConnection};
+use diesel::PgConnection;
 
-pub type Database = Surreal<Client>;
+pub type DbConn = PooledConnection<ConnectionManager<PgConnection>>;
 
-pub(crate) async fn init_db() -> surrealdb::Result<Database> {
-    let db = Surreal::new::<Ws>("localhost:8432").await?;
+#[derive(Clone)]
+pub struct Database {
+    pub pool: Pool<ConnectionManager<PgConnection>>,
+}
 
-    db.signin(Root {
-        username: "root",
-        password: "root",
-    })
-    .await?;
+impl Database {
+    pub fn new(url: &str) -> anyhow::Result<Self> {
+        let manager = ConnectionManager::<PgConnection>::new(url);
+        let pool = Pool::builder().test_on_check_out(true).build(manager)?;
+        Ok(Self { pool })
+    }
 
-    db.use_ns("dev").use_db("dontnote").await?;
-
-    Ok(db)
+    pub fn get(&self) -> anyhow::Result<DbConn> {
+        let conn = self.pool.get()?;
+        Ok(conn)
+    }
 }

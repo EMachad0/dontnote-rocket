@@ -1,16 +1,11 @@
-use serde::{Deserialize, Serialize};
+use diesel::Queryable;
+use uuid::Uuid;
 
-use crate::model::Model;
-
-#[derive(Debug, Clone, Serialize, Deserialize, SimpleObject)]
+#[derive(Debug, Clone, SimpleObject, Queryable)]
 pub struct User {
-    #[serde(skip_serializing)]
-    pub id: Option<String>,
+    pub id: i32,
+    pub uuid: Uuid,
     pub name: String,
     pub email: String,
     pub password: String,
-}
-
-impl Model for User {
-    const TABLE: &'static str = "user";
 }

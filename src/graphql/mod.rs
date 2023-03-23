@@ -2,9 +2,9 @@ mod mutation;
 mod resolver;
 mod routes;
 
+pub use async_graphql::EmptySubscription as SubscriptionRoot;
 pub use mutation::MutationRoot;
 pub use resolver::ResolverRoot;
-pub use async_graphql::EmptySubscription as SubscriptionRoot;
 
 pub use routes::*;
 
