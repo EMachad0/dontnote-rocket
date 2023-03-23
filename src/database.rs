@@ -19,4 +19,10 @@ impl Database {
         let conn = self.pool.get()?;
         Ok(conn)
     }
+
+    pub fn from_context<'ctx>(
+        ctx: &async_graphql::Context<'ctx>,
+    ) -> &'ctx Self {
+        ctx.data_unchecked::<Self>()
+    }
 }
