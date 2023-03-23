@@ -12,7 +12,7 @@ impl UserLoginMutation {
     pub async fn user_login(
         &self,
         ctx: &async_graphql::Context<'_>,
-        email: String,
+        #[graphql(validator(email))] email: String,
         password: String,
     ) -> async_graphql::Result<bool> {
         let db = ctx.data::<Database>()?;
